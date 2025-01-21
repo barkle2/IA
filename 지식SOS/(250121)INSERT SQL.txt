@@ -1,0 +1,321 @@
+-- 'tb_bbs_input' 테이블을 만듭니다.
+-- bbs_cn 컬럼이 커서 csv를 읽으면서 테이블 생성이 안되기 때문
+CREATE TABLE tb_bbs_input (
+	bbs_sn INTEGER NOT NULL,
+	field CHARACTER VARYING (10),
+	bbs_sj CHARACTER VARYING (500),
+	bbs_cn CHARACTER VARYING (1073741823),
+	register_nm CHARACTER VARYING (100),
+	regist_dt CHARACTER VARYING (14) NOT NULL,
+	opinion_co INTEGER NOT NULL
+)
+COLLATE utf8_bin
+REUSE_OID;
+
+-- 'tb_bbs_input' 테이블에 tb_bbs_input.csv 파일을 가져오기 한다.
+
+-- tb_bbs_input 테이블 확인
+SELECT * FROM tb_bbs_input;
+SELECT COUNT(*) FROM tb_bbs_input; -- 5908
+SELECT SUM(opinion_co) FROM tb_bbs_input;
+-- 데이터 확인을 위해 opinion_co을 합해보면 11,111이 나온다.
+-- 이것은 bbs_sn = 325425 인 행의 데이터가 깨졌기 때문이다.
+-- UPDATE 문으로 수정한다.
+
+UPDATE tb_bbs_input
+SET
+	bbs_cn = '<p><span style=""font-family: 맑은 고딕;"">물류센터에서 작년 추석연휴 중에 1일 근무한 순수일용근로자입니다.</span></p>
+<p><br/></p>
+<p><span style=""font-family: 맑은 고딕;"">근로계약서에는 </span><span style=""font-family: 맑은 고딕;""> </span><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">""</span><span style=""font-family: 맑은 고딕;"">일급 </span><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">: 86,927</span><span style=""font-family: 맑은 고딕;"">원 </span><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">&lt;</span><span style=""font-family: 맑은 고딕;"">기본급 </span><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">8,720*8=69,760</span><span style=""font-family: 맑은 고딕;"">원</span><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">, </span><span style=""font-family: 맑은 고딕;"">주휴수당 </span><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">69,760</span><span style=""font-family: 맑은 고딕;"">원</span><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">/5</span><span style=""font-family: 맑은 고딕;"">일</span><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">=13,952</span><span style=""font-family: 맑은 고딕;"">원</span><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">, </span><span style=""font-family: 맑은 고딕;"">연차수당 </span><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">69,760</span><span style=""font-family: 맑은 고딕;"">원</span><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">/21.7</span><span style=""font-family: 맑은 고딕;"">일</span><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">=3,215</span><span style=""font-family: 맑은 고딕;"">원</span><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">&gt;&lt;22</span><span style=""font-family: 맑은 고딕;"">시 이후 근무 심야수당 지급</span><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">&gt;""</span><span style=""font-family: 맑은 고딕;"">이라고 되어 있습니다</span><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">. </span></p>
+<p><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;""> <br/></span></p>
+<p><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;"">근무시간은 10:30~19:30(휴게1시간)인데, 1.5시간 연장근로해서 연장근로에 대해서만 가산수당 지급했습니다.</span></p>
+<p><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;""> <br/></span></p>
+<p><span style=""letter-spacing: 0pt; font-family: 맑은 고딕;""> 순수일용근로자에게도 당일 관공서공휴일 유급휴일수당도 적용해야 될까요</span></p>
+<p class=""0""><span style=""font-family: 맑은 고딕;"">   </span><span style=""font-family: 맑은 고딕;""> </span></p>
+<div class=""hwp_editor_board_content"" data-hjsonver=""1.0"" data-jsonlen=""7146"" id=""hwpEditorBoardContent""><!--[data-hwpjson]{ ""documentPr"": { ""di"": """", ""dp"": { ""dn"": ""test.hwp"", ""ta"": 1, ""d1"": 5, ""d2"": 1, ""dv"": 0, ""dr"": 1, ""do"": 1, ""vj"": ""1.1"", ""an"": ""Hancom Office Hangul"", ""av"": ""10, 0, 0, 10846"", ""ao"": ""WIN"", ""ab"": ""32"", ""ar"": ""LE"", ""as"": ""Windows_8"" }, ""dis"": false, ""ds"": { ""ti"": """", ""la"": ""ko"", ""cr"": """", ""su"": """", ""de"": """", ""cd"": ""2022-03-08T09:42:03.044Z"", ""md"": ""1601-01-01T09:00:00.000Z"", ""pd"": ""1601-01-01T09:00:00.000Z"", ""ke"": """" } }, ""dh"": { ""do"": { ""pa"": 1, ""fo"": 1, ""en"": 1, ""pi"": 1, ""tb"": 1, ""eq"": 1 }, ""fo"": [ ], ""cd"": { ""tp"": 0, ""lc"": { ""af"": false, ""ui"": false, ""fu"": false, ""dn"": false, ""ul"": false, ""el"": false, ""at"": false, ""tq"": false, ""da"": false, ""dw"": false, ""dj"": false, ""bc"": false, ""bu"": false, ""al"": false, ""ab"": false, ""ap"": false, ""an"": false, ""aa"": false, ""ds"": false, ""de"": false, ""as"": false, ""cp"": false, ""ao"": false, ""et"": false, ""ay"": false, ""am"": false, ""a1"": false, ""bt"": false, ""av"": false, ""dh"": false, ""dp"": false, ""d1"": false, ""mf"": false, ""bl"": false, ""ag"": false, ""dg"": false, ""ae"": false, ""df"": false, ""do"": false, ""dl"": false, ""di"": false, ""d2"": false, ""d3"": false, ""ob"": false, ""d4"": false, ""ev"": false,  ""d5"": false, ""d6"": false, ""a2"": false, ""dc"": false } }, ""ld"": { ""pa"": """", ""pi"": true, ""fo"": false } }, ""bf"": { ""01D8328555BA6DF000000004"": { ""id"": 1, ""td"": false, ""sh"": false, ""st"": 0, ""sc"": 0, ""si"": false, ""bt"": 0, ""bi"": false, ""cl"": 0, ""bc"": false, ""lt"": 0, ""lw"": 0, ""lc"": 0, ""rt"": 0, ""rw"": 0, ""rc"": 0, ""tt"": 0, ""tw"": 0, ""tc"": 0, ""bbt"": 0, ""bbw"": 0, ""bbc"": 0, ""dt"": 1, ""dw"": 0, ""dc"": 0, ""fi"": { } }, ""01D8328555BA6DF000000005"": { ""id"": 2, ""td"": false, ""sh"": false, ""st"": 0, ""sc"": 0, ""si"": false, ""bt"": 0, ""bi"": false, ""cl"": 0, ""bc"": false, ""lt"": 0, ""lw"": 0, ""lc"": 0, ""rt"": 0, ""rw"": 0, ""rc"": 0, ""tt"": 0, ""tw"": 0, ""tc"": 0, ""bbt"": 0, ""bbw"": 0, ""bbc"": 0, ""dt"": 1, ""dw"": 0, ""dc"": 0, ""fi"": { ""wb"": { ""fc"": 4294967295, ""hc"": 10066329, ""al"": 0, ""hs"": -1 } } } }, ""cp"": { ""01D8328555BA6DF000000006"": { ""id"": 0, ""he"": 1000, ""tc"": 0, ""sc"": 4294967295, ""uf"": false, ""uk"": false, ""sm"": 0, ""bf"": ""01D8328555BA6DF000000004"", ""f1"": ""한컴바탕"", ""t1"": 1, ""f2"": ""한컴바탕"", ""t2"": 1, ""f3"": ""함초롬바탕"", ""t3"": 1, ""f4"": ""한컴바탕"", ""t4"": 1, ""f5"": ""한컴바탕"", ""t5"": 1, ""f6"": ""한컴바탕"", ""t6"": 1, ""f7"": ""한컴바탕"", ""t7"": 1, ""r1"": 100, ""r2"": 100, ""r3"": 100, ""r4"": 100, ""r5"": 100, ""r6"": 100, ""r7"": 100, ""s1"": 0, ""s2"": 0, ""s3"": 0, ""s4"": 0, ""s5"": 0, ""s6"": 0, ""s7"": 0, ""e1"": 100, ""e2"": 100, ""e3"": 100, ""e4"": 100, ""e5"": 100, ""e6"": 100, ""e7"": 100, ""o1"": 0, ""o2"": 0, ""o3"": 0, ""o4"": 0, ""o5"": 0, ""o6"": 0, ""o7"": 0, ""it"": false, ""bo"": false, ""ut"": 0, ""us"": 1, ""uc"": 0, ""st"": false, ""ss"": 1, ""so"": 0, ""ot"": 0, ""ht"": 0, ""hc"": 0, ""hx"": 0, ""hy"": 0, ""em"": false, ""en"": false, ""su"": false, ""sb"": false }, ""01D8328555BA6DF000000007"": { ""id"": 1, ""he"": 1000, ""tc"": 0, ""sc"": 4294967295, ""uf"": false, ""uk"": false, ""sm"": 0, ""bf"": ""01D8328555BA6DF000000005"", ""f1"": ""함초롬바탕"", ""t1"": 1, ""f2"": ""함초롬바탕"", ""t2"": 1, ""f3"": ""함초롬바탕"", ""t3"": 1, ""f4"": ""함초롬바탕"", ""t4"": 1, ""f5"": ""함초롬바탕"", ""t5"": 1, ""f6"": ""함초롬바탕"", ""t6"": 1, ""f7"": ""함초롬바탕"", ""t7"": 1, ""r1"": 100, ""r2"": 100, ""r3"": 100, ""r4"": 100, ""r5"": 100, ""r6"": 100, ""r7"": 100, ""s1"": 0, ""s2"": 0, ""s3"": 0, ""s4"": 0, ""s5"": 0, ""s6"": 0, ""s7"": 0, ""e1"": 100, ""e2"": 100, ""e3"": 100, ""e4"": 100, ""e5"": 100, ""e6"": 100, ""e7"": 100, ""o1"": 0, ""o2"": 0, ""o3"": 0, ""o4"": 0, ""o5"": 0, ""o6"": 0, ""o7"": 0, ""it"": false, ""bo"": false, ""ut"": 0, ""us"": 1, ""uc"": 0, ""st"": false, ""ss"": 1, ""so"": 0, ""ot"": 0, ""ht"": 0, ""hc"": 0, ""hx"": 0, ""hy"": 0, ""em"": false, ""en"": false, ""su"": false, ""sb"": false } }, ""tp"": { ""01D8328555BA6DF000000008"": { ""id"": 0, ""al"": false, ""ar"": false, ""tp"": [ ] } }, ""nu"": { }, ""bu"": { }, ""pp"": { ""01D8328555BA6DF000000009"": { ""id"": 0, ""ah"": 0, ""av"": 0, ""ht"": 0, ""hi"": """", ""hl"": 0, ""tp"": ""01D8328555BA6DF000000008"", ""kb"": 0, ""kn"": true, ""ko"": false, ""kk"": false, ""kl"": false, ""kp"": false, ""kw"": 0, ""co"": 0, ""fl"": false, ""st"": true, ""sl"": false, ""ae"": false, ""aa"": false, ""mi"": 0, ""ml"": 0, ""mr"": 0, ""mp"": 0, ""mn"": 0, ""lt"": 0, ""lv"": 160, ""bf"": ""01D8328555BA6DF000000004"", ""bl"": 0, ""br"": 0, ""bt"": 0, ""bb"": 0, ""bc"": false, ""bi"": false }, ""01D8328555BA6DF00000000A"": { ""id"": 1, ""ah"": 0, ""av"": 0, ""ht"": 0, ""hi"": """", ""hl"": 0, ""tp"": ""01D8328555BA6DF000000008"", ""kb"": 0, ""kn"": true, ""ko"": false, ""kk"": false, ""kl"": false, ""kp"": false, ""kw"": 0, ""co"": 0, ""fl"": false, ""st"": true, ""sl"": false, ""ae"": false, ""aa"": false, ""mi"": 0, ""ml"": 0, ""mr"": 0, ""mp"": 0, ""mn"": 0, ""lt"": 0, ""lv"": 160, ""bf"": ""01D8328555BA6DF000000005"", ""bl"": 0, ""br"": 0, ""bt"": 0, ""bb"": 0, ""bc"": false, ""bi"": false } }, ""st"": { ""01D8328555BA6DF00000000B"": { ""id"": 0, ""ty"": 0, ""na"": ""바탕글"", ""en"": ""Normal"", ""pp"": ""01D8328555BA6DF00000000A"", ""cp"": ""01D8328555BA6DF000000007"", ""ns"": ""01D8328555BA6DF00000000B"", ""li"": 1042, ""lf"": false } }, ""mp"": { }, ""ro"": { ""hp"": ""01D8328555BA46E000000002"", ""01D8328555BA46E000000002"": { ""np"": ""01D8328555BA46E000000003"", ""id"": 0, ""pp"": ""01D8328555BA6DF00000000A"", ""si"": ""01D8328555BA6DF00000000B"", ""bf"": 3, ""ru"": [ { ""cp"": ""01D8328555BA6DF000000007"", ""ch"": [ { ""cc"": 2, ""ci"": 1936024420, ""co"": ""01D8328555BA1FD000000000"" } , { ""cc"": 2, ""ci"": 1668246628, ""co"": ""01D8328555BA46E000000001"" } , { ""t"": ""근로계약서에는 \""일급 : 86,927원 \u003C기본급 8,720*8=69,760원, 주휴수당 69,760원/5일=13,952원, 연차 수당 69,760원/21.7일=3,215원\u003E\u003C22시 이후 근무 심야수당 지급\u003E\""이라고 되어 있습니다. "" } ] } ] }, ""01D8328555BA46E000000003"": { ""np"": """", ""id"": -2147483648, ""pp"": ""01D8328555BA6DF000000009"", ""si"": ""01D8328555BA6DF00000000B"", ""bf"": 0, ""ru"": [ { ""cp"": ""01D8328555BA6DF000000006"", ""ch"": [ { ""t"": """" } ] } ] } }, ""sl"": { }, ""cs"": { ""01D8328555BA1FD000000000"": { ""cc"": 2, ""ci"": 1936024420, ""td"": 0, ""tv"": false, ""sc"": 1134, ""ts"": 8000, ""ms"": """", ""os"": """", ""gl"": 0, ""gc"": 0, ""gw"": false, ""ns"": 0, ""np"": 0, ""ni"": 0, ""nt"": 0, ""ne"": 0, ""hh"": false, ""hf"": false, ""hm"": false, ""fb"": false, ""hb"": false, ""fi"": false, ""hi"": false, ""hp"": false, ""he"": false, ""sl"": false, ""lr"": 0, ""lc"": 0, ""ld"": 0, ""ls"": 0, ""pp"": { ""ls"": false, ""wi"": 59528, ""he"": 84188, ""gt"": 0, ""ml"": 8504, ""mr"": 8504, ""mt"": 5668, ""mb"": 4252, ""mh"": 4252, ""mf"": 4252, ""mg"": 0 }, ""fn"": { ""at"": 0, ""au"": """", ""ap"": """", ""ac"": "")"", ""as"": false, ""ll"": -1, ""lt"": 1, ""lw"": 1, ""lc"": 0, ""sa"": 850, ""sb"": 567, ""st"": 283 , ""nt"": 0, ""nn"": 1, ""pp"": 0, ""pb"": false }, ""en"": { ""at"": 0, ""au"": """", ""ap"": """", ""ac"": "")"", ""as"": false, ""ll"": -4, ""lt"": 1, ""lw"": 1, ""lc"": 0, ""sa"": 850, ""sb"": 567, ""st"": 0 , ""nt"": 0, ""nn"": 1, ""pp"": 0, ""pb"": false }, ""pb"": [ { ""ty"": 0, ""bf"": ""01D8328555BA6DF000000004"", ""tb"": true, ""hi"": false, ""fi"": false, ""fa"": 0, ""ol"": 1417, ""or"": 1417, ""ot"": 1417, ""ob"": 1417 }, { ""ty"": 1, ""bf"": ""01D8328555BA6DF000000004"", ""tb"": true, ""hi"": false, ""fi"": false, ""fa"": 0, ""ol"": 1417, ""or"": 1417, ""ot"": 1417, ""ob"": 1417 }, { ""ty"": 2, ""bf"": ""01D8328555BA6DF000000004"", ""tb"": true, ""hi"": false, ""fi"": false, ""fa"": 0, ""ol"": 1417, ""or"": 1417, ""ot"": 1417, ""ob"": 1417 } ], ""mp"": [ ] } , ""01D8328555BA46E000000001"": { ""cc"": 2, ""ci"": 1668246628, ""ty"": 0, ""la"": 0, ""co"": 1, ""ss"": true, ""sg"": 0, ""lt"": 0, ""lw"": 0, ""lc"": 0, ""cs"": [ ] } }, ""bi"": [ ], ""bidt"": { } }--></div>', 
+	register_nm = '이윤정',
+	regist_dt = '20220308094911',
+	opinion_co = 2
+WHERE bbs_sn = 325425;
+
+-- 다시 이 쿼리를 실행했을 때 10353이 나와야 한다.
+SELECT SUM(opinion_co) FROM tb_bbs_input;
+
+-- tb_bbs_opinion_input.csv 파일을 가져오기 하면서 tb_bbs_opinion_input 테이블을 생성한다.
+-- tb_bbs_ctgry_data_input.csv 파일을 가져오기 하면서 tb_bbs_ctgry_data_input 테이블을 생성한다.
+
+-- tb_bbs_ctrgy_data_input 테이블 확인
+SELECT * FROM tb_bbs_ctgry_data_input;
+SELECT COUNT(*) FROM tb_bbs_ctgry_data_input;  --5908
+
+-- tb_bbs_opinion_input 테이블 확인
+SELECT * FROM tb_bbs_opinion_input;
+SELECT COUNT(*) FROM tb_bbs_opinion_input; -- 10353
+
+-- 여기까지 진행되었으면 tb_bbs_input, tb_bbs_opinion_input, tb_bbs_ctgry_data_input 테이블이 존재해야 한다.
+
+-- tb_bbs 테이블을 생성한다.
+-- 실제로는 이미 테이블이 존재하겠지만, 쿼리문 작성을 위해 만들어 보았다.
+CREATE TABLE tb_bbs (
+	bbs_sn INTEGER NOT NULL,
+	manage_sn INTEGER NOT NULL,
+	reply_bbs_sn INTEGER NOT NULL,
+	reply_ordr INTEGER NOT NULL,
+	reply_level_co INTEGER NOT NULL,
+	scope_code CHARACTER VARYING (6),
+	delete_at CHARACTER VARYING (1) NOT NULL,
+	end_de CHARACTER VARYING (8),
+	tmpr_at CHARACTER VARYING (1) NOT NULL,
+	notice_at CHARACTER VARYING (1) NOT NULL,
+	popup_at CHARACTER VARYING (1) NOT NULL,
+	secret_at CHARACTER VARYING (1) NOT NULL,
+	editr_at CHARACTER VARYING (1) NOT NULL,
+	bbs_sj CHARACTER VARYING (500),
+	bbs_cn CHARACTER VARYING (1073741823),
+	rdcnt INTEGER NOT NULL,
+	sj_bold_at CHARACTER VARYING (1) NOT NULL,
+	sj_italic_at CHARACTER VARYING (1) NOT NULL,
+	sj_underline_at CHARACTER VARYING (1) NOT NULL,
+	sj_color_at CHARACTER VARYING (1) NOT NULL,
+	sj_color_nm CHARACTER VARYING (500),
+	regist_dt CHARACTER VARYING (14) NOT NULL,
+	regist_ip CHARACTER VARYING (39),
+	register_id CHARACTER VARYING (200),
+	register_nm CHARACTER VARYING (100),
+	register_dept_nm CHARACTER VARYING (500),
+	updt_dt CHARACTER VARYING (14),
+	updt_ip CHARACTER VARYING (39),
+	updusr_id CHARACTER VARYING (200),
+	updusr_nm CHARACTER VARYING (100),
+	updusr_dept_nm CHARACTER VARYING (500),
+	delete_dt CHARACTER VARYING (14),
+	delete_ip CHARACTER VARYING (39),
+	dltr_id CHARACTER VARYING (200),
+	dltr_nm CHARACTER VARYING (100),
+	dltr_dept_nm CHARACTER VARYING (500),
+	answer_dt CHARACTER VARYING (14),
+	answer_ip CHARACTER VARYING (39),
+	answrr_id CHARACTER VARYING (200),
+	answrr_nm CHARACTER VARYING (100),
+	answrr_dept_nm CHARACTER VARYING (500),
+	answer_cn CHARACTER VARYING (1073741823),
+	thumb_flpth CHARACTER VARYING (500),
+	thumb_file_nm CHARACTER VARYING (500),
+	[password] CHARACTER VARYING (500),
+	file_co INTEGER NOT NULL,
+	opinion_co INTEGER NOT NULL,
+	move_flag CHARACTER VARYING (1),
+	CONSTRAINT pk_bbs PRIMARY KEY(bbs_sn)
+)
+COLLATE utf8_bin
+REUSE_OID;
+
+SELECT * FROM tb_bbs;
+
+-- INSERT 문을 이용해서 tb_bbs_input에 있는 데이터를 활용해서 tb_bbs 테이블에 데이터를 입력한다.
+INSERT INTO tb_bbs (
+    bbs_sn, 
+    manage_sn, 
+    reply_bbs_sn, 
+    reply_ordr, 
+    reply_level_co, 
+    scope_code, 
+    delete_at, 
+    end_de, 
+    tmpr_at, 
+    notice_at, 
+    popup_at, 
+    secret_at, 
+    editr_at, 
+    bbs_sj, 
+    bbs_cn, 
+    rdcnt, 
+    sj_bold_at, 
+    sj_italic_at, 
+    sj_underline_at, 
+    sj_color_at, 
+    sj_color_nm, 
+    regist_dt, 
+    regist_ip, 
+    register_id, 
+    register_nm, 
+    register_dept_nm, 
+    updt_dt, 
+    updt_ip, 
+    updusr_id, 
+    updusr_nm, 
+    updusr_dept_nm, 
+    delete_dt, 
+    delete_ip, 
+    dltr_id, 
+    dltr_nm, 
+    dltr_dept_nm, 
+    answer_dt, 
+    answer_ip, 
+    answrr_id, 
+    answrr_nm, 
+    answrr_dept_nm, 
+    answer_cn, 
+    thumb_flpth, 
+    thumb_file_nm, 
+    [password], 
+    file_co, 
+    opinion_co, 
+    move_flag
+)
+SELECT
+    bbs_sn,
+    '1133' AS manage_sn,
+    bbs_sn,
+    0 AS reply_ordr,
+    0 AS reply_level_co,
+    'BSC001' AS scope_code,
+    'N' AS delete_at,
+    '29991231' AS end_de,
+    'N' AS tmpr_at,
+    'N' AS notice_at,
+    'N' AS popup_at,
+    'N' AS secret_at,
+    'Y' AS editr_at,
+    bbs_sj,
+    bbs_cn,
+    0 AS rdcnt,
+    'N' AS sj_bold_at,
+    'N' AS sj_italic_at,
+    'N' AS sj_underline_at,
+    'N' AS sj_color_at,
+    NULL AS sj_color_nm,
+    regist_dt,
+    NULL AS regist_ip,
+    NULL AS register_id,
+    NULL AS register_nm,
+    NULL AS register_dept_nm,
+    NULL AS updt_dt,
+    NULL AS updt_ip,
+    NULL AS updusr_id,
+    NULL AS updusr_nm,
+    NULL AS updusr_dept_nm,
+    NULL AS delete_dt,
+    NULL AS delete_ip,
+    NULL AS dltr_id,
+    NULL AS dltr_nm,
+    NULL AS dltr_dept_nm,
+    NULL AS answer_dt,
+    NULL AS answer_ip,
+    NULL AS answrr_id,
+    NULL AS answrr_nm,
+    NULL AS answrr_dept_nm,
+    NULL AS answer_cn,
+    NULL AS thumb_flpth,
+    NULL AS thumb_file_nm,
+    'password' AS [password],
+    0 AS file_co,
+    opinion_co,
+    NULL AS move_flag
+FROM tb_bbs_input;
+
+SELECT * FROM tb_bbs;
+
+-- tb_bbs_opinion 테이블 생성
+-- 마찬가지로 tb_bbs_opinion 테이블은 이미 존재하겠지만, INSERT 문 실행을 위해 만들어 본다.
+CREATE TABLE tb_bbs_opinion (
+	opinion_no INTEGER NOT NULL,
+	bbs_sn INTEGER NOT NULL,
+	delete_at CHARACTER VARYING (1) NOT NULL,
+	reply_opinion_no INTEGER NOT NULL,
+	reply_ordr INTEGER NOT NULL,
+	reply_level_co INTEGER NOT NULL,
+	opinion_dc CHARACTER VARYING (4000) NOT NULL,
+	regist_dt CHARACTER VARYING (14) NOT NULL,
+	regist_ip CHARACTER VARYING (39),
+	register_id CHARACTER VARYING (200),
+	register_nm CHARACTER VARYING (100),
+	register_dept_nm CHARACTER VARYING (500),
+	delete_dt CHARACTER VARYING (14),
+	delete_ip CHARACTER VARYING (39),
+	dltr_id CHARACTER VARYING (200),
+	dltr_nm CHARACTER VARYING (100),
+	dltr_dept_nm CHARACTER VARYING (500),
+	[password] CHARACTER VARYING (500),
+	CONSTRAINT pk_bbs_opinion PRIMARY KEY(opinion_no, bbs_sn)
+)
+COLLATE utf8_bin
+REUSE_OID;
+
+-- tb_bbs_opinion_input 테이블의 데이터를 이용해서 tb_bbs_opinion 테이블에 데이터를 입력한다.
+INSERT INTO tb_bbs_opinion (
+    opinion_no,
+	bbs_sn,
+	delete_at,
+	reply_opinion_no,
+	reply_ordr,
+	reply_level_co,
+	opinion_dc,
+	regist_dt,
+	regist_ip,
+	register_id,
+	register_nm,
+	register_dept_nm,
+	delete_dt,
+	delete_ip,
+	dltr_id,
+	dltr_nm,
+	dltr_dept_nm,
+	[password]
+)
+SELECT
+    opinion_no,
+    bbs_sn,
+    'N' AS delete_at,
+    reply_opinion_no,
+    0 AS reply_ordr,
+    0 AS reply_level_co,
+    opinion_dc,
+    regist_dt,
+    NULL AS regist_ip,
+    NULL AS register_id,
+    NULL AS register_nm,
+    NULL AS register_dept_nm,
+    NULL AS delete_dt,
+    NULL AS delete_ip,
+    NULL AS dltr_id,
+    NULL AS dltr_nm,
+    NULL AS dltr_dept_nm,
+    NULL AS [password]
+FROM tb_bbs_opinion_input;
+
+-- tb_bbs_opinion 데이터 확인
+SELECT * FROM tb_bbs_opinion;
+SELECT COUNT(*) FROM tb_bbs_opinion;
+
+-- tb_bbs_ctgry_data 테이블 생성
+-- 이미 존재하는 테이블이지만, INSERT 문 테스트를 위해 만들어본다.
+CREATE TABLE tb_bbs_ctgry_data (
+	bbs_sn INTEGER NOT NULL,
+	ctgry_no INTEGER NOT NULL,
+	manage_sn INTEGER NOT NULL,
+	regist_dt CHARACTER VARYING (14),
+	CONSTRAINT pk_bbs_ctgry_data PRIMARY KEY(bbs_sn, ctgry_no, manage_sn)
+)
+COLLATE utf8_bin
+REUSE_OID;
+
+-- tb_bbs_ctgry_data_input 테이블의 데이터를 활용하여 tb_bbs_ctgry_data에 데이터 입력
+INSERT INTO tb_bbs_ctgry_data (
+	bbs_sn,
+	ctgry_no,
+	manage_sn,
+	regist_dt
+)
+SELECT 
+	bbs_sn,
+	ctrgy_no,
+	'1133' AS manage_sn,
+	NULL AS regist_dt
+FROM tb_bbs_ctgry_data_input;
+
+-- tb_bbs_ctgry_data 확인
+SELECT * FROM tb_bbs_ctgry_data;
+SELECT COUNT(*) FROM tb_bbs_ctgry_data;
+
+-- 작업 끝
