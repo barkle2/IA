@@ -53,11 +53,19 @@ def get_count_by_sgg(df_br, df_sgg):
     sgg_biz22_dict = df_sgg.set_index('지역명')['사업체수_22'].to_dict()
     sgg_per23_dict = df_sgg.set_index('지역명')['종사자수_23'].to_dict()
     sgg_per22_dict = df_sgg.set_index('지역명')['종사자수_22'].to_dict()
+    sgg_pop24_dict = df_sgg.set_index('지역명')['인구수_24'].to_dict()
+    sgg_pop23_dict = df_sgg.set_index('지역명')['인구수_23'].to_dict()
+    sgg_pop22_dict = df_sgg.set_index('지역명')['인구수_22'].to_dict()
+    sgg_size23_dict = df_sgg.set_index('지역명')['면적_23'].to_dict()
 
     count_biz23 = []
     count_biz22 = []
     count_per23 = []
     count_per22 = []
+    count_pop24 = []
+    count_pop23 = []
+    count_pop22 = []
+    count_size23 = []
 
     # 관할 컬럼의 각 시군구에 대해 사업체수, 종사자수 총합 구하기
     for sgg in df_br['관할']:
@@ -65,12 +73,20 @@ def get_count_by_sgg(df_br, df_sgg):
         count_biz22.append(get_total_biz_count(sgg, sgg_biz22_dict))
         count_per23.append(get_total_biz_count(sgg, sgg_per23_dict))
         count_per22.append(get_total_biz_count(sgg, sgg_per22_dict))
+        count_pop24.append(get_total_biz_count(sgg, sgg_pop24_dict))
+        count_pop23.append(get_total_biz_count(sgg, sgg_pop23_dict))
+        count_pop22.append(get_total_biz_count(sgg, sgg_pop22_dict))
+        count_size23.append(get_total_biz_count(sgg, sgg_size23_dict))
 
     # df_br에 사업체수, 종사자수 컬럼 추가
     df_br['사업체수_23'] = count_biz23
     df_br['사업체수_22'] = count_biz22
     df_br['종사자수_23'] = count_per23
-    df_br['종사자수_22'] = count_per22 
+    df_br['종사자수_22'] = count_per22
+    df_br['인구수_24'] = count_pop24
+    df_br['인구수_23'] = count_pop23
+    df_br['인구수_22'] = count_pop22
+    df_br['면적_23'] = count_size23
 
     return df_br
 
@@ -78,7 +94,7 @@ def get_count_by_sgg(df_br, df_sgg):
 # 1. 지방관서 관할, 정원 파일을 읽는다.
 # 1-1. 파일명 설정 후 read_excel로 읽어오기
 # 입력파일명 설정
-input_file = '250717_지방관서_관할_정원.xlsx'
+input_file = '250721_지방관서_기초_자료.xlsx'
 # 연번은 문자열로 읽음(나중에 지청신설 시 00-1, 00-2 등으로 구분하기 위함)
 df_br = pd.read_excel(input_file, dtype={'연번': str})
 
@@ -133,7 +149,7 @@ for sgg, count in counts.most_common(5):
 #%%
 # 1-3-8. 관할에 빠진 값이 있는지 확인
 # 시군구 사업체수, 종사자수 엑셀 파일의 모든 컬럼을 문자열로 읽어오기
-df_sgg = pd.read_excel('사업체노동실태조사(v3)_시군구.xlsx', dtype={'연번': str})
+df_sgg = pd.read_excel('시군구_사업체수_종사자수_인구_면적(v4).xlsx', dtype={'연번': str})
 
 sgg_total_list = df_sgg['지역명'].to_list()
 
@@ -160,19 +176,20 @@ else:
 print(" 경북 군위군은 2023년부터 대구 군위군으로 변경되었으므로", "\n", "사업체노동실태조사(v3)_시군구.xlsx 파일에서 경북 군위군은 삭제하고, ", "\n", "2022년 이전 데이터는 대구 군위군에 입력함")
 
 #%%
-# 1-3-10. 정원, 산안, 근로 컬럼의 값 확인
+# 1-3-10. 정원, 정원_산안, 정원_노동 컬럼의 값 확인
 # 각각의 합 구하기
+print("총정원 합계:", df_br['총정원'].sum())
 print("정원 합계:", df_br['정원'].sum())
-print("산안 합계:", df_br['산안'].sum())
-print("근로 합계:", df_br['근로'].sum())
+print("산안 합계:", df_br['정원_산안'].sum())
+print("노동 합계:", df_br['정원_노동'].sum())
 
-# 정원 = 산안 + 근로 를 충족하지 않는 행 찾기
-non_matching_rows = df_br[df_br['정원'] != (df_br['산안'] + df_br['근로'])]
+# 정원 = 산안 + 노동 를 충족하지 않는 행 찾기
+non_matching_rows = df_br[df_br['정원'] != (df_br['정원_산안'] + df_br['정원_노동'])]
 if non_matching_rows.empty:
-    print("모든 행이 정원 = 산안 + 근로 를 충족합니다.")
+    print("모든 행이 정원 = 산안 + 노동 을 충족합니다.")
 else:
-    print("정원 = 산안 + 근로 를 충족하지 않는 행이 있습니다:")
-    print(non_matching_rows[['연번', '청', '지청', '정원', '산안', '근로']])
+    print("정원 = 산안 + 노동 를 충족하지 않는 행이 있습니다:")
+    print(non_matching_rows[['연번', '청', '지청', '정원', '정원_산안', '정원_노동']])
 
 #%%
 # 2. 사업체수, 종사자수 값을 추가
@@ -182,57 +199,22 @@ else:
 df_br = get_count_by_sgg(df_br, df_sgg)
 
 #%%
-# 추가된 사업체수, 종사자수 컬럼 확인 
+# 추가된 컬럼 확인 
 # 23년 사업체수: 2124670, 22년 사업체수: 2099955, 23년 종사자수: 19159335, 22년 종사자수: 18835715
 print("23년 사업체수 합:", df_br['사업체수_23'].sum())
 print("22년 사업체수 합:", df_br['사업체수_22'].sum())
 print("23년 종사자수 합:", df_br['종사자수_23'].sum())
 print("22년 종사자수 합:", df_br['종사자수_22'].sum())
+print("24년 인구수 합:", df_br['인구수_24'].sum())
+print("23년 인구수 합:", df_br['인구수_22'].sum())
+print("22년 인구수 합:", df_br['인구수_22'].sum())
+print("22년 면적 합:", df_br['면적_23'].sum())
       
 #%%
 df_br.head()
 
-
-
-
-
-
-
-
-
-
 #%%
-# 시군구 사업체수, 종사자수 엑셀 파일의 모든 컬럼을 문자열로 읽어오기
-df_sgg = pd.read_excel('사업체노동실태조사(v3)_시군구.xlsx', dtype=str)
+# "지청 기초 자료.xlsx" 파일로 출력한다.
+df_br.to_excel("1.지청_기초_자료.xlsx", index=False)
 
-
-
-
-#%%
-# df_sgg의 '사업체수_22' 컬럼의 값들 알파벳순으로 확인하기
-df_sgg.sort_values(by='사업체수_22')['사업체수_22'].unique()
-
-#%%
-# df_sgg 정보 확인
-df_sgg.head()
-
-#%%
-# df_sgg 의 사업체수_22 컬럼을 정수형으로 변환하는데, '-' 값은 0으로 변환
-df_sgg['사업체수_23'] = df_sgg['사업체수_23'].replace('-', 0)
-df_sgg['사업체수_23'] = df_sgg['사업체수_23'].astype(int)
-
-df_sgg['종사자수_23'] = df_sgg['종사자수_23'].replace('-', 0)
-df_sgg['종사자수_23'] = df_sgg['종사자수_23'].astype(int)
-
-df_sgg['사업체수_22'] = df_sgg['사업체수_22'].replace('-', 0)
-df_sgg['사업체수_22'] = df_sgg['사업체수_22'].astype(int)
-
-df_sgg['종사자수_22'] = df_sgg['종사자수_22'].replace('-', 0)
-df_sgg['종사자수_22'] = df_sgg['종사자수_22'].astype(int)
-
-#%%
-print(df_sgg['사업체수_23'].sum())
-print(df_sgg['종사자수_23'].sum())
-print(df_sgg['사업체수_22'].sum())
-print(df_sgg['종사자수_22'].sum())
 # %%
