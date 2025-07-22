@@ -5,67 +5,73 @@ pd.set_option('display.max_colwidth', None)
 from sklearn.preprocessing import MinMaxScaler
 
 # %%
-# 주어진 연번으로 관할에서 입력된 시군구를 반환하는 함수
-def get_sgg(df_br: pd.DataFrame, index: str):
-    # Filter the DataFrame for rows where '연번' matches the provided index
-    df_select = df_br[df_br['연번'] == index]
+# 주어진 시군구 연번으로 관할에서 입력된 시군구를 반환하는 함수
+def get_sgg(df_br: pd.DataFrame, br_index: str):
+    # 입력받은 '시군구 연번'에 해당하는 행 찾기
+    df_select = df_br[df_br['연번'] == br_index]
 
-    # Check if any rows were found for the given index
+    # 선택한 행이 비어있지 않으면
     if not df_select.empty:
-        # Get the '관할' value from the first (and likely only) matching row.
-        # .iloc[0] is used assuming '연번' is unique or you only care about the first match.
+        # '관할' 컬럼에서 시군구 문자열 추출
         sggs = df_select['관할'].iloc[0]
-
-        # Split the string by commas and strip whitespace from each part
+        # 시군구 문자열을 쉼표로 분리하여 리스트로 변환
         sgg_list = [sgg.strip() for sgg in sggs.split(',')]
         return sgg_list
+    # 선택한 행이 비어있으면
     else:
-        # Return an empty list if no matching '연번' is found
         return []
 
 #%%
-# 주어진 연번으로 관할에서 입력된 시군구를 추가하는 함수
-def add_sgg(df_br: pd.DataFrame, index: str, sgg_to_add: str) -> pd.DataFrame:
+# 주어진 시군구 연번으로 관할에서 입력된 시군구를 추가하는 함수
+def add_sgg(df_br: pd.DataFrame, br_index: str, sggs_to_add: str) -> pd.DataFrame:
 
     # 원본 DataFrame을 직접 수정하지 않기 위해 복사본을 만듭니다.
-    df_br_updated = df_br.copy()
+    df_br_cp = df_br.copy()
 
-    # Find the row index (or indices if '연번' is not unique)
-    row_indices = df_br_updated[df_br_updated['연번'] == index].index
+    # 입력받은 '시군구 연번'에 해당하는 행 찾기
+    df_select = df_br_cp[df_br_cp['연번'] == br_index]
 
-    if row_indices.empty:
-        print(f"경고: '연번' '{index}'에 해당하는 행을 찾을 수 없습니다. 원본 DataFrame을 반환합니다.")
-        return df_br # 매칭되는 연번이 없으면 원본 df_br을 반환
+    # 선택한 행이 비어있지 않으면
+    if not df_select.empty:
+        
+        # 입력할 시군구 문자열을 쉼표로 분리하여 리스트로 변환
+        sgg_list = [sgg.strip() for sgg in sggs_to_add.split(',')]
 
-    # Normalize the sgg to add (remove leading/trailing whitespace)
-    sgg_to_add_stripped = sgg_to_add.strip()
+        # 선택된 행에서 '관할' 컬럼의 현재 값을 가져옵니다.
+        current_sggs = df_select['관할'].iloc[0]
 
-    # 변경이 있었는지 여부를 추적합니다.
-    # 함수 마지막에 실제 변경이 있었는지에 따라 df_br_updated를 반환할지 df_br을 반환할지 결정
-    # (요구사항에 맞춰서 매칭되는 연번이 없거나 변경이 없어도 df_br_updated를 반환하도록 변경)
-    
-    for row_idx in row_indices:
-        current_sgg_string = df_br_updated.loc[row_idx, '관할']
-
-        # Get the current list of jurisdictions, handling potential empty/NaN values
-        if pd.isna(current_sgg_string) or current_sgg_string.strip() == '':
-            current_sggs = []
+        # 현재 '관할'이 없으면 current_sggs를 빈 리스트로 초기화
+        if pd.isna(current_sggs) or current_sggs.strip() == '':
+            current_sggs_list = []
+        # 현재 '관할'이 있으면 쉼표로 분리하여 리스트로 변환
         else:
-            current_sggs = [sgg.strip() for sgg in current_sgg_string.split(',')]
+            current_sggs_list = [sgg.strip() for sgg in current_sggs.split(',')]
 
-        # Check if the sgg_to_add is already in the list (case-sensitive)
-        if sgg_to_add_stripped not in current_sggs:
-            current_sggs.append(sgg_to_add_stripped)
-            
-            # Join the list back into a comma-separated string
-            new_sgg_string = ', '.join(current_sggs)
-            df_br_updated.loc[row_idx, '관할'] = new_sgg_string
-            print(f"'{index}' 연번의 '관할'에 '{sgg_to_add_stripped}'를 추가했습니다.")
-        else:
-            print(f"'{index}' 연번의 '관할'에 '{sgg_to_add_stripped}'는 이미 존재합니다. 추가하지 않습니다.")
+        for sgg in sgg_list:
+            # 현재 '관할'에 추가할 시군구가 이미 존재하지 않으면 추가
+            if sgg not in current_sggs_list:
+                current_sggs_list.append(sgg)
+                print(f"'{br_index}' 연번의 '관할'에 '{sgg}'를 추가했습니다.")
+            # 현재 '관할'에 추가할 시군구가 이미 존재하면 추가하지 않음
+            else:
+                print(f"'{br_index}' 연번의 '관할'에 '{sgg}'는 이미 존재합니다. 추가하지 않습니다.")
+
+        # 리스트를 다시 쉼표로 연결하여 문자열로 변환
+        new_sgg_string = ', '.join(current_sggs_list)
+
+        # DataFrame의 해당 행의 '관할' 컬럼을 업데이트
+        df_br_cp.loc[df_br_cp['연번'] == br_index, '관할'] = new_sgg_string
+
+        print(f"'{br_index}' 연번의 '관할'이 업데이트되었습니다: {new_sgg_string}")
+
+        # 업데이트된 DataFrame 반환
+        return df_br_cp
+
+    # 선택한 행이 비어있으면 원본 df_br을 반환
+    else:        
+        print(f"경고: '연번' '{br_index}'에 해당하는 행을 찾을 수 없습니다. 원본 DataFrame을 반환합니다.")
+        return df_br
     
-    return df_br_updated
-
 #%%
 def del_sgg(df_br: pd.DataFrame, index: str, sgg_to_delete: str) -> pd.DataFrame:
 
@@ -121,7 +127,7 @@ def del_sgg(df_br: pd.DataFrame, index: str, sgg_to_delete: str) -> pd.DataFrame
 #%%
 # 지청을 신설하는 함수
 def add_br(df_br: pd.DataFrame, index: str, cheong: str, branch: str, size: str, sgg: str) -> pd.DataFrame:
-    # Create a new DataFrame row with the provided data
+    # 입력된 데이터로 새로운 지청 행을 생성
     new_row = pd.DataFrame([{
         '연번': index,
         '청': cheong,
@@ -131,16 +137,15 @@ def add_br(df_br: pd.DataFrame, index: str, cheong: str, branch: str, size: str,
         '기관명': branch+size
     }])
 
-    # Check if the '연번' already exists in the DataFrame
+    # 시군구 연번이 중복이면 지청을 신설하지 않고 종료
     if index in df_br['연번'].values:
         print(f"경고: '연번' '{index}'는 이미 존재합니다. 데이터가 추가되지 않았습니다.")
-        return df_br # Return the original DataFrame if '연번' already exists
+        return df_br
     
-    # Concatenate the original DataFrame with the new row
-    # ignore_index=True ensures that the new row gets a fresh index
-    df_br_updated = pd.concat([df_br, new_row])
-    
+    # 기존 데이터에 새로운 지청 행을 추가
+    df_br_updated = pd.concat([df_br, new_row], ignore_index=True)
     print(f"새로운 지청 '{branch}' (연번: {index})이(가) 추가되었습니다.")
+    
     return df_br_updated    
 
 #%%
@@ -370,6 +375,10 @@ def update_value(df: pd.DataFrame, idx: str, column: str, value) -> pd.DataFrame
     return df_updated
 
 #%%
+import os
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+#%%
 # 1. 지청 기초자료 읽기
 # 1-1. 파일명 설정 후 read_excel로 읽어오기
 # 입력파일명 설정
@@ -395,13 +404,19 @@ df_br = get_count_by_sgg(df_br, df_sgg)
 #%%
 # 지청별 기초 데이터만 '2.신설지청포함_기초_자료1.xlsx'로 출력
 # '연번','청', '지청','규모', '관할', '기관명', '사업체수_23', '사업체수_22', '종사자수_23', '종사자수_22', '인구수_24', '인구수_23', '인구수_22', '면적_23' 컬럼만 출력
-df_br_basic = df_br2[['연번','청', '지청','규모', '관할', '기관명', '사업체수_23', '사업체수_22', '종사자수_23', '종사자수_22', '인구수_24', '인구수_23', '인구수_22', '면적_23']]
+df_br_basic = df_br[['연번','청', '지청','규모', '관할', '기관명', '사업체수_23', '사업체수_22', '종사자수_23', '종사자수_22', '인구수_24', '인구수_23', '인구수_22', '면적_23']]
 df_br_basic.to_excel('2.신설지청포함_기초_자료1.xlsx', index=False)
 
 #%%
 df_br = add_br(df_br, '01-2', '서울청', '서울서초', '지청', '서울 서초구, 서울 중구')
+
 #%%
-df_br = del_sgg(df_br, '01-2', '서울 중구')
+df_br = add_sgg(df_br, '01', '테스트')
+#%%
+df_br.head(1)
+
+#%%
+df_br = del_sgg(df_br, '01', '테스트')
 
 # %%
 print(get_sgg(df_br, '01'))
