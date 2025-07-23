@@ -205,37 +205,46 @@ def get_count_by_sgg(df_br: pd.DataFrame, df_sgg: pd.DataFrame) -> pd.DataFrame:
 
 #%%
 # 주어진 컬럼의 값을 0~1 MinMaxScaler 로 표준화 하는 함수
-def standardize_columns(df: pd.DataFrame, columns_to_standardize: list) -> pd.DataFrame:
+def standardize_columns(df_br: pd.DataFrame, columns_to_edit: list) -> pd.DataFrame:
 
     # 원본 DataFrame을 직접 수정하지 않기 위해 복사본을 만듭니다.
-    df_standardized = df.copy()
+    df_br_cp = df_br.copy()
 
     # StandardScaler 인스턴스 생성
     scaler = MinMaxScaler()
 
     # 표준화할 컬럼들이 DataFrame에 있는지 확인
-    missing_cols = [col for col in columns_to_standardize if col not in df_standardized.columns]
+    missing_cols = [col for col in columns_to_edit if col not in df_br_cp.columns]
+
+    # missing_cols이 비어있으면
+    if missing_cols
+
     if missing_cols:
-        print(f"경고: 다음 컬럼들이 DataFrame에 없어 표준화에서 제외됩니다: {', '.join(missing_cols)}")
-        # 존재하지 않는 컬럼은 리스트에서 제거하여 다음 과정에 영향을 주지 않도록 함
-        columns_to_standardize = [col for col in columns_to_standardize if col in df_standardized.columns]
-        if not columns_to_standardize: # 모든 컬럼이 없으면 그대로 반환
-            print("표준화할 유효한 컬럼이 없습니다. 원본 DataFrame을 반환합니다.")
-            return df_standardized
+        print(f"경고: DataFrame에 없는 컬럼이 있어 표준화를 하지 않습니다: {', '.join(missing_cols)}")
+        return df_br
+    else:
+        # 지정된 컬럼들을 MinMaxScaler로 변환
+        scaled_values = scaler.fit_transform(df_br_cp[columns_to_edit])
 
-    try:
-        # 지정된 컬럼들만 선택하여 표준화 적용
-        # .loc를 사용하여 복사본 DataFrame에 안전하게 할당
-        df_standardized.loc[:, columns_to_standardize] = scaler.fit_transform(
-            df_standardized[columns_to_standardize]
-        )
-        print(f"다음 컬럼들이 0-1 범위로 표준화되었습니다: {', '.join(columns_to_standardize)}")
-    except Exception as e:
-        print(f"오류: 표준화 중 문제가 발생했습니다. 데이터 타입을 확인해주세요. ({e})")
-        # 오류 발생 시 표준화되지 않은 복사본 반환
-        return df.copy() # 원본과 동일한 복사본 반환
+        for i, col in enumerate(columns_to_edit):
+            # 컬럼 이름을 생성하고
+            new_col = col + '_2'
+            # 컬럼을 추가
+            df_br_cp[new_col] = scaled_values[:, i]
 
-    return df_standardized
+            # 기존 컬럼 바로 뒤에 새로운 컬럼을 이동시킴
+            col_idx = df_br_cp.columns.get_loc(col)
+
+            # 컬럼명 리스트 얻기
+            cols = list(df_br_cp.columns)
+            # (제일 마지막에 위치한) 새 컬럼을 제거한 후
+            cols.remove(new_col)
+            # 기존 컬럼 바로 뒤에 삽입
+            cols.insert(col_idx + 1, new_col)
+            # 새로운 컬럼 순서로 재배열
+            df_br_cp = df_br_cp[cols]
+
+    return df_br_cp
 
 #%%
 # 여러 컬럼에 가중치를 적용하여 합산한 후 비율을 계산하는 함수
