@@ -149,59 +149,37 @@ def add_br(df_br: pd.DataFrame, index: str, cheong: str, branch: str, size: str,
     return df_br_updated    
 
 #%%
-# 관할 문자열 활용 함수 정의
 # 관할 문자열을 입력받아 해당 지역 해당값 총합을 반환하는 함수
-def get_total_biz_count(br_series, sgg_dict):
-    sggs = [sgg.strip() for sgg in br_series.split(',')]
+def get_total_count(sggs_str, sgg_dict):
+    sggs = [sgg.strip() for sgg in sggs_str.split(',')]
     return sum(sgg_dict.get(sgg, 0) for sgg in sggs)
 
-#%%
-# df_sgg의 시군구별 사업체수, 종사자수 값을 활용하여 df_br에 지청별 사업체수, 종사자수 입력
-def get_count_by_sgg(df_br: pd.DataFrame, df_sgg: pd.DataFrame) -> pd.DataFrame:
-    # 원본 DataFrame을 직접 수정하지 않기 위해 복사본을 만듭니다.
-    df_br_updated = df_br.copy()
+# 시군구 관할 데이터로 입력된 컬럼 값 채우기
+def get_count_by_sgg(df_br, df_sgg, columns_to_calculate):
 
-    # 지역명 -> 사업체수 딕셔너리로 변환
-    sgg_biz23_dict = df_sgg.set_index('지역명')['사업체수_23'].to_dict()
-    sgg_biz22_dict = df_sgg.set_index('지역명')['사업체수_22'].to_dict()
-    sgg_per23_dict = df_sgg.set_index('지역명')['종사자수_23'].to_dict()
-    sgg_per22_dict = df_sgg.set_index('지역명')['종사자수_22'].to_dict()
-    sgg_pop24_dict = df_sgg.set_index('지역명')['인구수_24'].to_dict()
-    sgg_pop23_dict = df_sgg.set_index('지역명')['인구수_23'].to_dict()
-    sgg_pop22_dict = df_sgg.set_index('지역명')['인구수_22'].to_dict()
-    sgg_size23_dict = df_sgg.set_index('지역명')['면적_23'].to_dict()
+    # 입력된 컬럼 이름이 단일 문자열이고 콤마로 구분되어 있을 경우 분리
+    if len(columns_to_calculate) == 1 and ',' in columns_to_calculate[0]:
+        columns_to_calculate = [col.strip() for col in columns_to_calculate[0].split(',')]
 
-    count_biz23 = []
-    count_biz22 = []
-    count_per23 = []
-    count_per22 = []
-    count_pop24 = []
-    count_pop23 = []
-    count_pop22 = []
-    count_size23 = []
+    for col_name in columns_to_calculate:
+        # 해당 컬럼이 df_sgg에 없으면 에러 방지를 위해 건너뛰고 경고 출력
+        if col_name not in df_sgg.columns:
+            print(f"경고: df_sgg에 '{col_name}' 컬럼이 없습니다. 이 컬럼은 건너뜝니다.")
+            continue
 
-    # 관할 컬럼의 각 시군구에 대해 사업체수, 종사자수 총합 구하기
-    for sgg in df_br['관할']:
-        count_biz23.append(get_total_biz_count(sgg, sgg_biz23_dict))
-        count_biz22.append(get_total_biz_count(sgg, sgg_biz22_dict))
-        count_per23.append(get_total_biz_count(sgg, sgg_per23_dict))
-        count_per22.append(get_total_biz_count(sgg, sgg_per22_dict))
-        count_pop24.append(get_total_biz_count(sgg, sgg_pop24_dict))
-        count_pop23.append(get_total_biz_count(sgg, sgg_pop23_dict))
-        count_pop22.append(get_total_biz_count(sgg, sgg_pop22_dict))
-        count_size23.append(get_total_biz_count(sgg, sgg_size23_dict))
+        # 지역명 -> 해당 컬럼 데이터 딕셔너리로 변환
+        sgg_data_dict = df_sgg.set_index('지역명')[col_name].to_dict()
 
-    # df_br에 사업체수, 종사자수 컬럼 추가
-    df_br_updated['사업체수_23'] = count_biz23
-    df_br_updated['사업체수_22'] = count_biz22
-    df_br_updated['종사자수_23'] = count_per23
-    df_br_updated['종사자수_22'] = count_per22
-    df_br_updated['인구수_24'] = count_pop24
-    df_br_updated['인구수_23'] = count_pop23
-    df_br_updated['인구수_22'] = count_pop22
-    df_br_updated['면적_23'] = count_size23
+        # 각 관할에 대해 총합 계산
+        counts = []
+        for sgg_str in df_br['관할']:
+            counts.append(get_total_count(sgg_str, sgg_data_dict))
 
-    return df_br_updated
+        # df_br에 새 컬럼 추가
+        df_br[col_name] = counts
+
+    return df_br
+
 
 #%%
 # 주어진 컬럼의 값을 0~1 MinMaxScaler 로 표준화 하는 함수
@@ -217,8 +195,6 @@ def standardize_columns(df_br: pd.DataFrame, columns_to_edit: list) -> pd.DataFr
     missing_cols = [col for col in columns_to_edit if col not in df_br_cp.columns]
 
     # missing_cols이 비어있으면
-    if missing_cols
-
     if missing_cols:
         print(f"경고: DataFrame에 없는 컬럼이 있어 표준화를 하지 않습니다: {', '.join(missing_cols)}")
         return df_br
@@ -228,7 +204,7 @@ def standardize_columns(df_br: pd.DataFrame, columns_to_edit: list) -> pd.DataFr
 
         for i, col in enumerate(columns_to_edit):
             # 컬럼 이름을 생성하고
-            new_col = col + '_2'
+            new_col = col + '_표준'
             # 컬럼을 추가
             df_br_cp[new_col] = scaled_values[:, i]
 
@@ -391,23 +367,108 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 # 1. 지청 기초자료 읽기
 # 1-1. 파일명 설정 후 read_excel로 읽어오기
 # 입력파일명 설정
-input_file = '1.지청_기초_자료.xlsx'
+input_file = '1_3_지청_기초_자료(by_program).xlsx'
 # 연번은 문자열로 읽음(나중에 지청신설 시 00-1, 00-2 등으로 구분하기 위함)
 df_br = pd.read_excel(input_file, dtype={'연번': str})
 # %%
-
-df_br.head()
-# %%
-df_br['연번']
+df_br.head(2)
 
 #%%
 # 시군구 사업체수, 종사자수 엑셀 파일의 모든 컬럼을 문자열로 읽어오기
-df_sgg = pd.read_excel('시군구_사업체수_종사자수_인구_면적(v4).xlsx', dtype={'연번': str})
+df_sgg = pd.read_excel('1_2_시군구_사업체수_종사자수_인구_면적.xlsx', dtype={'연번': str})
 
 #%%
-# df_br2에 있는 '관할' 컬럼의 정보로 사업체수, 종사자수, 인구, 면적 구하기
-# get_count_by_sgg 함수로 df_br2에 사업체수, 종사자수, 인구, 면적 컬럼 추가
-df_br = get_count_by_sgg(df_br, df_sgg)
+# 화성지청 신설
+df_br = add_br(df_br, '13-1', '중부', '화성', '지청', '경기 화성시, 경기 오산시')
+# 경기지청에서 화성시 삭제
+df_br = del_sgg(df_br, '13', '경기 화성시')
+# 평택지청에서 오산시 삭제
+df_br = del_sgg(df_br, '17', '경기 오산시')
+
+# 관할구역 확인
+print('경기지청:', get_sgg(df_br, '13'))
+print('화성지청:', get_sgg(df_br, '13-1'))
+print('평택지청:', get_sgg(df_br, '17'))
+
+#%%
+# 광주남부지청 신설
+df_br = add_br(df_br, '37-1', '광주', '광주남부', '지청', '광주 동구, 광주 서구, 광주 남구, 전남 함평군, 전남 나주시, 전남 화순군')
+# 광주청에서 광주 동구, 서구, 남구, 전남 함평군, 나주시, 화순군 삭제
+df_br = del_sgg(df_br, '37', '광주 동구, 광주 서구, 광주 남구, 전남 함평군, 전남 나주시, 전남 화순군')
+
+# 관할구역 확인
+print('광주청:', get_sgg(df_br, '37'))
+print('광주남부지청:', get_sgg(df_br, '37-1'))
+
+#%%
+# 서울서초지청 신설
+df_br = add_br(df_br, '01-1', '서울', '서울서초', '지청', '서울 서초구')
+# 서울청에서 서울 서초구 삭제
+df_br = del_sgg(df_br, '01', '서울 서초구')
+
+# 관할구역 확인
+print('서울청:', get_sgg(df_br, '01'))
+print('서울서초지청:', get_sgg(df_br, '01-1'))
+
+#%%
+# 세종지청 신설
+df_br = add_br(df_br, '43-1', '대전', '세종', '지청', '세종 세종시, 충남 공주시, 충남 계룡시')
+# 대전청에서 세종 세종시, 충남 공주시, 충남 계룡시 삭제
+df_br = del_sgg(df_br, '43', '세종 세종시, 충남 공주시, 충남 계룡시')
+
+# 관할구역 확인
+print('대전청:', get_sgg(df_br, '43'))
+print('세종지청:', get_sgg(df_br, '43-1'))
+
+#%%
+# 남양주지청 신설
+df_br = add_br(df_br, '11-1', '중부', '남양주', '지청', '경기 구리시, 경기 남양주시')
+# 의정부지청에서 경기 구리시, 경기 남양주시 삭제
+df_br = del_sgg(df_br, '11', '경기 구리시, 경기 남양주시')
+
+# 관할구역 확인
+print('의정부지청:', get_sgg(df_br, '11'))
+print('남양주지청:', get_sgg(df_br, '11-1'))
+
+#%%
+# 대구북부지청 신설
+df_br = add_br(df_br, '31-1', '대구', '대구북부', '지청', '대구 중구, 대구 북구, 대구 군위군')
+# 대구청에서 대구 중구, 대구 북구, 대구 군위군 삭제
+df_br = del_sgg(df_br, '31', '대구 중구, 대구 북구, 대구 군위군')
+
+# 관할구역 확인
+print('대구청:', get_sgg(df_br, '31'))
+print('대구북부지청:', get_sgg(df_br, '31-1'))
+
+#%% 
+# 울산동부지청 신설
+df_br = add_br(df_br, '27-1', '부산', '울산동부', '지청', '울산 중구, 울산 동구, 울산 북구')
+# 울산지청에서 울산 중구, 울산 동구, 울산 북구 삭제
+df_br = del_sgg(df_br, '27', '울산 중구, 울산 동구, 울산 북구')
+
+# 관할구역 확인
+print('울산지청:', get_sgg(df_br, '27'))
+print('울산동부지청:', get_sgg(df_br, '27-1'))
+
+#%%
+# 신설된 지청 포함한 파일 출력
+df_br.to_excel('2_1_지청_신설.xlsx')
+
+#%%
+# get_count_by_sgg 함수로 df_br에 사업체수, 종사자수 컬럼 추가
+columns_to_calculate = ['사업체수_23, 종사자수_23']
+df_br = get_count_by_sgg(df_br, df_sgg, columns_to_calculate)
+
+#%%
+# 신설된 지청 포함한 파일 출력
+df_br.to_excel('2_2_지청_신설_사업체수_종사자수_재계산.xlsx')
+
+#%%
+# 사업체수, 종사자수 합 확인
+# 23년 사업체수: 2124670, 23년 종사자수: 19159335
+print("23년 사업체수 합:", df_br['사업체수_23'].sum())
+print("23년 종사자수 합:", df_br['종사자수_23'].sum())
+
 
 
 #%%

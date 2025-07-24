@@ -40,53 +40,34 @@ def print_branch_names(df, cheong=None):
                 print(", ".join(records[i:i+5]))
 
 #%%
-# 관할 문자열 활용 함수 정의
 # 관할 문자열을 입력받아 해당 지역 해당값 총합을 반환하는 함수
-def get_total_biz_count(br_series, sgg_dict):
-    sggs = [sgg.strip() for sgg in br_series.split(',')]
+def get_total_count(sggs_str, sgg_dict):
+    sggs = [sgg.strip() for sgg in sggs_str.split(',')]
     return sum(sgg_dict.get(sgg, 0) for sgg in sggs)
 
-# df_sgg의 시군구별 사업체수, 종사자수 값을 활용하여 df_br에 지청별 사업체수, 종사자수 입력
-def get_count_by_sgg(df_br, df_sgg):    
-    # 지역명 -> 사업체수 딕셔너리로 변환
-    sgg_biz23_dict = df_sgg.set_index('지역명')['사업체수_23'].to_dict()
-    sgg_biz22_dict = df_sgg.set_index('지역명')['사업체수_22'].to_dict()
-    sgg_per23_dict = df_sgg.set_index('지역명')['종사자수_23'].to_dict()
-    sgg_per22_dict = df_sgg.set_index('지역명')['종사자수_22'].to_dict()
-    sgg_pop24_dict = df_sgg.set_index('지역명')['인구수_24'].to_dict()
-    sgg_pop23_dict = df_sgg.set_index('지역명')['인구수_23'].to_dict()
-    sgg_pop22_dict = df_sgg.set_index('지역명')['인구수_22'].to_dict()
-    sgg_size23_dict = df_sgg.set_index('지역명')['면적_23'].to_dict()
+# 시군구 관할 데이터로 입력된 컬럼 값 채우기
+def get_count_by_sgg(df_br, df_sgg, columns_to_calculate):
 
-    count_biz23 = []
-    count_biz22 = []
-    count_per23 = []
-    count_per22 = []
-    count_pop24 = []
-    count_pop23 = []
-    count_pop22 = []
-    count_size23 = []
+    # 입력된 컬럼 이름이 단일 문자열이고 콤마로 구분되어 있을 경우 분리
+    if len(columns_to_calculate) == 1 and ',' in columns_to_calculate[0]:
+        columns_to_calculate = [col.strip() for col in columns_to_calculate[0].split(',')]
 
-    # 관할 컬럼의 각 시군구에 대해 사업체수, 종사자수 총합 구하기
-    for sgg in df_br['관할']:
-        count_biz23.append(get_total_biz_count(sgg, sgg_biz23_dict))
-        count_biz22.append(get_total_biz_count(sgg, sgg_biz22_dict))
-        count_per23.append(get_total_biz_count(sgg, sgg_per23_dict))
-        count_per22.append(get_total_biz_count(sgg, sgg_per22_dict))
-        count_pop24.append(get_total_biz_count(sgg, sgg_pop24_dict))
-        count_pop23.append(get_total_biz_count(sgg, sgg_pop23_dict))
-        count_pop22.append(get_total_biz_count(sgg, sgg_pop22_dict))
-        count_size23.append(get_total_biz_count(sgg, sgg_size23_dict))
+    for col_name in columns_to_calculate:
+        # 해당 컬럼이 df_sgg에 없으면 에러 방지를 위해 건너뛰고 경고 출력
+        if col_name not in df_sgg.columns:
+            print(f"경고: df_sgg에 '{col_name}' 컬럼이 없습니다. 이 컬럼은 건너뜝니다.")
+            continue
 
-    # df_br에 사업체수, 종사자수 컬럼 추가
-    df_br['사업체수_23'] = count_biz23
-    df_br['사업체수_22'] = count_biz22
-    df_br['종사자수_23'] = count_per23
-    df_br['종사자수_22'] = count_per22
-    df_br['인구수_24'] = count_pop24
-    df_br['인구수_23'] = count_pop23
-    df_br['인구수_22'] = count_pop22
-    df_br['면적_23'] = count_size23
+        # 지역명 -> 해당 컬럼 데이터 딕셔너리로 변환
+        sgg_data_dict = df_sgg.set_index('지역명')[col_name].to_dict()
+
+        # 각 관할에 대해 총합 계산
+        counts = []
+        for sgg_str in df_br['관할']:
+            counts.append(get_total_count(sgg_str, sgg_data_dict))
+
+        # df_br에 새 컬럼 추가
+        df_br[col_name] = counts
 
     return df_br
 
@@ -94,13 +75,13 @@ def get_count_by_sgg(df_br, df_sgg):
 # 1. 지방관서 관할, 정원 파일을 읽는다.
 # 1-1. 파일명 설정 후 read_excel로 읽어오기
 # 입력파일명 설정
-input_file = '250721_지방관서_기초_자료.xlsx'
+input_file = '1_1_지청_기초_자료(v3).xlsx'
 # 연번은 문자열로 읽음(나중에 지청신설 시 00-1, 00-2 등으로 구분하기 위함)
 df_br = pd.read_excel(input_file, dtype={'연번': str})
 
 #%%
 # 1-2. df_br 정보 확인
-df_br.head()
+df_br.head(2)
 
 #%%
 # 1-3. df_br 데이터 검증하기
@@ -120,6 +101,10 @@ print(df_br['지청'].unique())
 #%%
 # 1-3-4. 기관명 컬럼 생성
 df_br['기관명'] = df_br['지청'] + df_br['규모']
+
+#%%
+# 컬럼 순서 변경
+df_br = df_br[['연번', '청', '지청', '규모', '기관명', '관할', '총정원', '정원', '정원_산안', '정원_노동', '재해자수_24', '중대재해자수_24', '근로손실일수_24', '신고사건_24']]
 
 #%%
 # 1-3-5. 기관명을 청 별로 출력
@@ -149,7 +134,7 @@ for sgg, count in counts.most_common(5):
 #%%
 # 1-3-8. 관할에 빠진 값이 있는지 확인
 # 시군구 사업체수, 종사자수 엑셀 파일의 모든 컬럼을 문자열로 읽어오기
-df_sgg = pd.read_excel('시군구_사업체수_종사자수_인구_면적(v4).xlsx', dtype={'연번': str})
+df_sgg = pd.read_excel('1_2_시군구_사업체수_종사자수_인구_면적.xlsx', dtype={'연번': str})
 
 sgg_total_list = df_sgg['지역명'].to_list()
 
@@ -196,25 +181,25 @@ else:
 
 # 2-1. df_br에 있는 '관할' 컬럼의 정보로 사업체수, 종사자수 구하기
 # get_count_by_sgg 함수로 df_br에 사업체수, 종사자수 컬럼 추가
-df_br = get_count_by_sgg(df_br, df_sgg)
+columns_to_calculate = ['사업체수_23, 종사자수_23']
+df_br = get_count_by_sgg(df_br, df_sgg, columns_to_calculate)
 
 #%%
 # 추가된 컬럼 확인 
-# 23년 사업체수: 2124670, 22년 사업체수: 2099955, 23년 종사자수: 19159335, 22년 종사자수: 18835715
+# 23년 사업체수: 2124670, 23년 종사자수: 19159335
 print("23년 사업체수 합:", df_br['사업체수_23'].sum())
-print("22년 사업체수 합:", df_br['사업체수_22'].sum())
 print("23년 종사자수 합:", df_br['종사자수_23'].sum())
-print("22년 종사자수 합:", df_br['종사자수_22'].sum())
-print("24년 인구수 합:", df_br['인구수_24'].sum())
-print("23년 인구수 합:", df_br['인구수_22'].sum())
-print("22년 인구수 합:", df_br['인구수_22'].sum())
-print("22년 면적 합:", df_br['면적_23'].sum())
+
       
 #%%
 df_br.head()
 
 #%%
+# 컬럼 순서 변경
+df_br = df_br[['연번', '청', '지청', '규모', '기관명', '관할', '총정원', '정원', '정원_산안', '정원_노동', '사업체수_23', '종사자수_23', '재해자수_24', '중대재해자수_24', '근로손실일수_24', '신고사건_24']]
+
+#%%
 # "지청 기초 자료.xlsx" 파일로 출력한다.
-df_br.to_excel("1.지청_기초_자료.xlsx", index=False)
+df_br.to_excel("1_3_지청_기초_자료(by_program).xlsx", index=False)
 
 # %%
