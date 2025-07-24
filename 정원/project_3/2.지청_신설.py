@@ -277,66 +277,41 @@ def get_branch_ratio(df_br: pd.DataFrame, branches_indices: str, weighted_column
 
 
 #%%
-def update_values(df_br: pd.DataFrame, branchs: str, weights: dict, columns: list) -> pd.DataFrame:
-    df_br_updated = df_br.copy(deep=True)
+def update_values(df_br: pd.DataFrame, branchs: str, ratios: dict, columns: list) -> pd.DataFrame:
+    df_updated = df_br.copy()
 
-    # 1. 입력값 확인
-    print("[입력 확인]")
-    print("branchs:", branchs)
-    print("weights:", weights)
-    print("columns:", columns)
+    # 연번 리스트 파싱
+    branch_list = [b.strip() for b in branchs.split(',') if b.strip()]
+    
+    # 비율이 정의된 연번만 필터링
+    valid_branches = [b for b in branch_list if b in ratios]
+    if not valid_branches:
+        print("경고: 주어진 연번이 비율 딕셔너리에 없습니다.")
+        return df_updated
 
-    # 연번을 문자열로 변환해두면 안전함
-    df_br_updated['연번'] = df_br_updated['연번'].astype(str)
+    # 컬럼마다 작업 수행
+    for col in columns:
+        if col not in df_updated.columns:
+            print(f"경고: 컬럼 '{col}'이(가) DataFrame에 없습니다. 건너뜁니다.")
+            continue
 
-    # 비율 계산 함수 호출
-    ratios = get_branch_ratio(df_br_updated, branchs, weights)
-    print("[계산된 비율 ratios]:", ratios)
+        # 전체 합을 먼저 계산
+        total = pd.to_numeric(df_updated.loc[df_updated['연번'].isin(valid_branches), col], errors='coerce').sum()
+        
+        # 비율 기반 값 계산 및 정수 변환
+        values = [round(ratios[b] * total) for b in valid_branches]
 
-    # 2. 유효한 컬럼 확인
-    valid_cols = [col for col in columns if col in df_br_updated.columns]
-    missing_cols = [col for col in columns if col not in df_br_updated.columns]
+        # 정수 변환 후 합계가 달라질 수 있으므로 마지막 항목 보정
+        diff = int(total - sum(values))
+        if values and diff != 0:
+            values[-1] += diff  # 마지막 값에 보정치 적용
 
-    if missing_cols:
-        print(f"[경고] 다음 컬럼이 누락되어 무시됩니다: {', '.join(missing_cols)}")
-    if not valid_cols:
-        print("[오류] 분배할 유효한 컬럼이 없습니다. 원본 반환.")
-        return df_br_updated
+        # 업데이트
+        for b, v in zip(valid_branches, values):
+            df_updated.loc[df_updated['연번'] == b, col] = v
 
-    # 3. 연번 리스트 파싱
-    idx_list = [idx.strip() for idx in branchs.split(',') if idx.strip()]
-    print("[대상 연번]:", idx_list)
+    return df_updated
 
-    results = []  # 각 컬럼별 총합 결과
-
-    # 4. 각 컬럼별 총합 계산
-    for col_name in valid_cols:
-        total_sum = 0.0
-        for idx in idx_list:
-            values = df_br_updated.loc[df_br_updated['연번'] == idx, col_name].values
-            if len(values) > 0 and pd.notna(values[0]):
-                total_sum += float(values[0])
-        results.append((col_name, total_sum))
-
-    print("[컬럼별 총합]", results)
-
-    # 5. 비율에 따라 각 행에 분배
-    for col, total in results:
-        for idx, ratio in ratios.items():
-            if not isinstance(total, (int, float)):
-                print(f"[오류] 컬럼 {col}의 총합(total)이 숫자가 아님: {total}")
-                continue
-
-            target_idx = df_br_updated[df_br_updated['연번'] == idx].index
-            if len(target_idx) == 0:
-                print(f"[경고] 연번 {idx}에 해당하는 행이 없습니다. 건너뜀.")
-                continue
-
-            value = float(total) * float(ratio)
-            df_br_updated = update_value(df_br_updated, idx, col, value)
-            print(idx, col, value)
-
-    return df_br_updated
 
 #%%
 # df_br의 '연번' 컬럼이 idx이고, column의 값을 value로 update 하는 함수
@@ -469,7 +444,45 @@ df_br.to_excel('2_2_지청_신설_사업체수_종사자수_재계산.xlsx')
 print("23년 사업체수 합:", df_br['사업체수_23'].sum())
 print("23년 종사자수 합:", df_br['종사자수_23'].sum())
 
+#%%
+# 사업체수, 종사자수 컬럼을 0~1로 표준화
+columns_to_norm = ['사업체수_23', '종사자수_23']
+df_br = standardize_columns(df_br, columns_to_norm)
 
+#%%
+# 표준화된 컬럼 확인
+print(df_br.head(2))
+
+#%%
+# 가중치 딕셔너리를 변수로 정의
+weights = {
+    '사업체수_23_표준': 0.35,
+    '종사자수_23_표준': 0.2
+}
+
+#%%
+# 서울청과 서울서초지청 사이의 비율 계산
+ratios = get_branch_ratio(df_br, '01, 01-1', weights)
+
+# 결과 출력
+print(ratios)
+
+# 서울청과 서울서초지청 행의 '총정원, 정원, 정원_산안, 정원_노동, 재해자수_24, 중대재해자수_24, 근로손실일수_24, 신고사건_24' 컬럼을 업데이트
+columns_to_update = ['총정원', '정원', '정원_산안', '정원_노동', '재해자수_24', '중대재해자수_24', '근로손실일수_24', '신고사건_24']
+df_br = update_values(df_br, '01, 01-1', ratios, columns_to_update)
+
+#%%
+# 업데이트된 DataFrame 확인
+df_br.head(2)
+
+
+#%%
+# 재해자수, 중대재해자수, 근로손실일수, 신고사건 컬럼을 0~1로 표준화
+columns_to_norm = ['재해자수_24', '중대재해자수_24', '근로손실일수_24', '신고사건_24']
+df_br = standardize_columns(df_br, columns_to_norm)
+
+#%%
+df_br.head(2)
 
 #%%
 # 지청별 기초 데이터만 '2.신설지청포함_기초_자료1.xlsx'로 출력
