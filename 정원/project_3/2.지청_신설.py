@@ -460,6 +460,29 @@ weights = {
     '종사자수_23_표준': 0.2
 }
 
+# 업데이트 할 컬럼: '총정원, 정원, 정원_산안, 정원_노동, 재해자수_24, 중대재해자수_24, 근로손실일수_24, 신고사건_24' 
+columns_to_update = ['총정원', '정원', '정원_산안', '정원_노동', '재해자수_24', '중대재해자수_24', '근로손실일수_24', '신고사건_24']
+
+#%%
+# 경기지청과 화성지청, 평택지청 사이의 비율 계산
+ratios = get_branch_ratio(df_br, '13, 13-1, 17', weights)
+
+# 결과 출력
+print(ratios)
+
+# 비율에 따라 컬럼값 업데이트
+df_br = update_values(df_br, '13, 13-1, 17', ratios, columns_to_update)
+
+#%%
+# 광주청과 광주남부지청 사이의 비율 계산
+ratios = get_branch_ratio(df_br, '37, 37-1', weights)
+
+# 결과 출력
+print(ratios)
+
+# 비율에 따라 컬럼값 업데이트
+df_br = update_values(df_br, '37, 37-1', ratios, columns_to_update)
+
 #%%
 # 서울청과 서울서초지청 사이의 비율 계산
 ratios = get_branch_ratio(df_br, '01, 01-1', weights)
@@ -467,13 +490,52 @@ ratios = get_branch_ratio(df_br, '01, 01-1', weights)
 # 결과 출력
 print(ratios)
 
-# 서울청과 서울서초지청 행의 '총정원, 정원, 정원_산안, 정원_노동, 재해자수_24, 중대재해자수_24, 근로손실일수_24, 신고사건_24' 컬럼을 업데이트
-columns_to_update = ['총정원', '정원', '정원_산안', '정원_노동', '재해자수_24', '중대재해자수_24', '근로손실일수_24', '신고사건_24']
+# 비율에 따라 컬럼값 업데이트
 df_br = update_values(df_br, '01, 01-1', ratios, columns_to_update)
 
 #%%
+# 대전청과 세종지청 사이의 비율 계산
+ratios = get_branch_ratio(df_br, '43, 43-1', weights)
+
+# 결과 출력
+print(ratios)
+
+# 비율에 따라 컬럼값 업데이트
+df_br = update_values(df_br, '43, 43-1', ratios, columns_to_update)
+
+#%%
+# 의정부지청과 남양주지청 사이의 비율 계산
+ratios = get_branch_ratio(df_br, '11, 11-1', weights)
+
+# 결과 출력
+print(ratios)
+
+# 비율에 따라 컬럼값 업데이트
+df_br = update_values(df_br, '11, 11-1', ratios, columns_to_update)
+
+#%%
+# 대구청과 대구북부지청 사이의 비율 계산
+ratios = get_branch_ratio(df_br, '31, 31-1', weights)
+
+# 결과 출력
+print(ratios)
+
+# 비율에 따라 컬럼값 업데이트
+df_br = update_values(df_br, '31, 31-1', ratios, columns_to_update)
+
+#%%
+# 울산지청과 울산동부지청 사이의 비율 계산
+ratios = get_branch_ratio(df_br, '27, 27-1', weights)
+
+# 결과 출력
+print(ratios)
+
+# 비율에 따라 컬럼값 업데이트
+df_br = update_values(df_br, '27, 27-1', ratios, columns_to_update)
+
+#%%
 # 업데이트된 DataFrame 확인
-df_br.head(2)
+df_br.to_excel('2_3_지청_신설_컬럼_업데이트.xlsx', index=False)
 
 
 #%%
@@ -481,59 +543,25 @@ df_br.head(2)
 columns_to_norm = ['재해자수_24', '중대재해자수_24', '근로손실일수_24', '신고사건_24']
 df_br = standardize_columns(df_br, columns_to_norm)
 
-#%%
-df_br.head(2)
+#%% 
+# 표준화된 컬럼까지 파일로 저장
+df_br.to_excel('2_4_지청_신설_표준화.xlsx', index=False)
 
-#%%
-# 지청별 기초 데이터만 '2.신설지청포함_기초_자료1.xlsx'로 출력
-# '연번','청', '지청','규모', '관할', '기관명', '사업체수_23', '사업체수_22', '종사자수_23', '종사자수_22', '인구수_24', '인구수_23', '인구수_22', '면적_23' 컬럼만 출력
-df_br_basic = df_br[['연번','청', '지청','규모', '관할', '기관명', '사업체수_23', '사업체수_22', '종사자수_23', '종사자수_22', '인구수_24', '인구수_23', '인구수_22', '면적_23']]
-df_br_basic.to_excel('2.신설지청포함_기초_자료1.xlsx', index=False)
 
 #%%
-df_br = add_br(df_br, '01-2', '서울청', '서울서초', '지청', '서울 서초구, 서울 중구')
+# 데이터 확인
+print(df_br['재해자수_24'].describe())
+print(df_br['재해자수_24'].sum())
 
-#%%
-df_br = add_sgg(df_br, '01', '테스트')
-#%%
-df_br.head(1)
+print(df_br['중대재해자수_24'].describe())
+print(df_br['중대재해자수_24'].sum())
 
-#%%
-df_br = del_sgg(df_br, '01', '테스트')
+print(df_br['근로손실일수_24'].describe())
+print(df_br['근로손실일수_24'].sum())
 
-# %%
-print(get_sgg(df_br, '01'))
-print(get_sgg(df_br, '01-2'))
-
-
+print(df_br['신고사건_24'].describe())
+print(df_br['신고사건_24'].sum())
 
 # %%
-# df_br2 변수의 사업체수_23, 사업체수_22, 종사자수_23, 종사자수_22, 인구수_24, 인구수_23, 인구수_22, 면적_23 을 0~1로 표준화
-columns_to_norm = [
-    '사업체수_23', '사업체수_22', '종사자수_23', '종사자수_22', '인구수_24', '인구수_23', '인구수_22', '면적_23'
-]
-df_br3 = standardize_columns(df_br3, columns_to_norm)
-
-# %%
-df_br3.tail()
-# %%
-
-#%%
-weights = {'사업체수_23': 1}
-ratios1 = get_branch_ratio(df_br3, "01, 02", weights)
-print(ratios1)
-# %%
-df_br3.tail(2)
-# %%
-branchs = '01, 01-2'
-weights = {'사업체수_23': 0.8, '종사자수_23': 0.2}
-columns = ['총정원', '정원']
-
-df_up = update_values(df_br3, branchs, weights, columns)
-# %%
-df_up[['정원', '총정원']]
-# %%
-df_up.head(2)
-# %%
-df_up.tail(2)
+print(df_br[df_br['연번']=='11-1'])
 # %%
