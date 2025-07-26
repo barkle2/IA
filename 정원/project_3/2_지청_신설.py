@@ -182,7 +182,7 @@ def get_count_by_sgg(df_br, df_sgg, columns_to_calculate):
 
 
 #%%
-# 주어진 컬럼의 값을 0~1 MinMaxScaler 로 표준화 하는 함수
+# 주어진 컬럼의 값을 최대값=1이 되도록 표준화 하는 함수
 def standardize_columns(df_br: pd.DataFrame, columns_to_edit: list) -> pd.DataFrame:
 
     # 원본 DataFrame을 직접 수정하지 않기 위해 복사본을 만듭니다.
@@ -199,25 +199,22 @@ def standardize_columns(df_br: pd.DataFrame, columns_to_edit: list) -> pd.DataFr
         print(f"경고: DataFrame에 없는 컬럼이 있어 표준화를 하지 않습니다: {', '.join(missing_cols)}")
         return df_br
     else:
-        # 지정된 컬럼들을 MinMaxScaler로 변환
-        scaled_values = scaler.fit_transform(df_br_cp[columns_to_edit])
+        # 주어진 값을 '값/최대값'으로 바꾼 표준 컬럼을 추가
+        for col in columns_to_edit:
+            max_val = df_br_cp[col].max()
 
-        for i, col in enumerate(columns_to_edit):
-            # 컬럼 이름을 생성하고
+            if max_val == 0:
+                print(f"주의: '{col}' 컬럼의 최대값이 0이므로 나눗셈을 수행할 수 없습니다. 해당 컬럼은 처리하지 않습니다.")
+                continue
+
             new_col = col + '_표준'
-            # 컬럼을 추가
-            df_br_cp[new_col] = scaled_values[:, i]
+            df_br_cp[new_col] = df_br_cp[col] / max_val
 
-            # 기존 컬럼 바로 뒤에 새로운 컬럼을 이동시킴
+            # 기존 컬럼 바로 뒤에 새 컬럼을 위치시키기 위한 작업
             col_idx = df_br_cp.columns.get_loc(col)
-
-            # 컬럼명 리스트 얻기
             cols = list(df_br_cp.columns)
-            # (제일 마지막에 위치한) 새 컬럼을 제거한 후
             cols.remove(new_col)
-            # 기존 컬럼 바로 뒤에 삽입
             cols.insert(col_idx + 1, new_col)
-            # 새로운 컬럼 순서로 재배열
             df_br_cp = df_br_cp[cols]
 
     return df_br_cp
@@ -445,7 +442,7 @@ print("23년 사업체수 합:", df_br['사업체수_23'].sum())
 print("23년 종사자수 합:", df_br['종사자수_23'].sum())
 
 #%%
-# 사업체수, 종사자수 컬럼을 0~1로 표준화
+# 사업체수, 종사자수 컬럼을 최대값이 1이 되도록 표준화
 columns_to_norm = ['사업체수_23', '종사자수_23']
 df_br = standardize_columns(df_br, columns_to_norm)
 
