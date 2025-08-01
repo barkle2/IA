@@ -134,7 +134,7 @@ for sgg, count in counts.most_common(5):
 #%%
 # 1-3-8. 관할에 빠진 값이 있는지 확인
 # 시군구 사업체수, 종사자수 엑셀 파일의 모든 컬럼을 문자열로 읽어오기
-df_sgg = pd.read_excel('1_2_시군구_사업체수_종사자수_인구_면적.xlsx', dtype={'연번': str})
+df_sgg = pd.read_excel('1_2_시군구_사업체수_종사자수_인구_면적_행정통계(v2).xlsx', dtype={'연번': str})
 
 sgg_total_list = df_sgg['지역명'].to_list()
 
@@ -181,7 +181,7 @@ else:
 
 # 2-1. df_br에 있는 '관할' 컬럼의 정보로 사업체수, 종사자수 구하기
 # get_count_by_sgg 함수로 df_br에 사업체수, 종사자수 컬럼 추가
-columns_to_calculate = ['사업체수_23, 종사자수_23']
+columns_to_calculate = ['사업체수_23, 종사자수_23, 재해자수_24, 중대재해자수_24, 신고사건_24']
 df_br = get_count_by_sgg(df_br, df_sgg, columns_to_calculate)
 
 #%%
@@ -189,6 +189,9 @@ df_br = get_count_by_sgg(df_br, df_sgg, columns_to_calculate)
 # 23년 사업체수: 2124670, 23년 종사자수: 19159335
 print("23년 사업체수 합:", df_br['사업체수_23'].sum())
 print("23년 종사자수 합:", df_br['종사자수_23'].sum())
+print("24년 재해자수 합:", df_br['재해자수_24'].sum())
+print("24년 중대재해자수 합:", df_br['중대재해자수_24'].sum())
+print("24년 신고사건 합:", df_br['신고사건_24'].sum())
 
       
 #%%
